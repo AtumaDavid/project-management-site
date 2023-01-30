@@ -1,11 +1,23 @@
 import React from "react";
 import Avatar from "../../components/Avatar";
+import { useFirestore } from "../../hooks/useFirestore";
+import { useAuthContext } from "../../hooks/useAuthContext";
+import { useHistory } from "react-router-dom";
 
 export default function ProjectSummary({ project }) {
+  const { deleteDocument } = useFirestore("projects");
+  const { user } = useAuthContext();
+  const history = useHistory();
+
+  const handleClick = (e) => {
+    deleteDocument(project.id);
+    history.push("/");
+  };
   return (
     <div>
       <div className="project-summary">
         <h2 className="page-title">{project.name}</h2>
+        <p>project created By {project.createdBy.displayName}</p>
         <p className="due-date">
           project due by {project.dueDate.toDate().toDateString()}
         </p>
@@ -19,6 +31,12 @@ export default function ProjectSummary({ project }) {
           ))}
         </div>
       </div>
+      {/* this button can only been seen by the user who created the project */}
+      {user.uid === project.createdBy.id && (
+        <button className="btn" onClick={handleClick}>
+          Mark as complete
+        </button>
+      )}
     </div>
   );
 }
